@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OJL Book Maker — Automated Technical Journal Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base:        #08090d;
+      --bg-surface:     #0f1118;
+      --bg-elevated:    #161922;
+      --bg-highlight:   #1e222e;
+      --border-subtle:  rgba(255, 255, 255, 0.07);
+      --border-medium:  rgba(255, 255, 255, 0.12);
+      --border-focus:   #3b82f6;
+      --text-primary:   #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted:     #64748b;
+      --accent:         #3b82f6;
+      --accent-hover:   #2563eb;
+      --accent-soft:    rgba(59, 130, 246, 0.12);
+      --accent-glow:    rgba(59, 130, 246, 0.25);
+      --success:        #10b981;
+      --success-soft:   rgba(16, 185, 129, 0.12);
+      --error:          #f43f5e;
+      --error-soft:     rgba(244, 63, 94, 0.12);
+      --radius-sm:      6px;
+      --radius-md:      10px;
+      --radius-lg:      16px;
+      --font-sans:      'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --font-mono:      'JetBrains Mono', monospace;
+    }
+
+    ::selection { background: var(--accent); color: #ffffff; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+
+    body {
+      background-color: var(--bg-base);
+      background-image: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.08), transparent),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 36px 36px, 36px 36px;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      caret-color: var(--accent);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      width: 100%;
+      background: rgba(8, 9, 13, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      color: white; box-shadow: 0 0 16px var(--accent-glow);
+    }
+    .brand-title { font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; }
+    .brand-subtitle { font-size: 0.75rem; color: var(--text-muted); }
+
+    .header-pills { display: flex; align-items: center; gap: 10px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.72rem; font-weight: 600;
+      padding: 4px 10px; border-radius: 999px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+    .pill.accent {
+      background: var(--accent-soft);
+      border-color: rgba(59, 130, 246, 0.25);
+      color: #60a5fa;
+    }
+    .pill-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--success); box-shadow: 0 0 8px var(--success);
+    }
+
+    .app-container {
+      width: 100%; max-width: 900px;
+      padding: 32px 20px 80px;
+    }
+
+    .step-track {
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 32px;
+    }
+    .step-segment {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.8rem; font-weight: 600; color: var(--text-muted);
+    }
+    .step-segment.active { color: var(--text-primary); }
+    .step-segment.done { color: var(--accent); }
+    .step-num {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--bg-elevated); border: 1px solid var(--border-medium);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700;
+    }
+    .step-segment.active .step-num {
+      background: var(--accent); border-color: var(--accent);
+      color: #ffffff; box-shadow: 0 0 12px var(--accent-glow);
+    }
+    .step-segment.done .step-num {
+      background: var(--accent-soft); border-color: var(--accent);
+      color: var(--accent);
+    }
+    .step-divider {
+      width: 44px; height: 1px; background: var(--border-subtle); margin: 0 12px;
+    }
+
+    .surface {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      display: none;
+    }
+    .surface.active {
+      display: block;
+      animation: fadeIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .surface-header { margin-bottom: 24px; }
+    .surface-title {
+      font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em;
+      margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .surface-desc { color: var(--text-secondary); font-size: 0.86rem; }
+
+    .section-separator {
+      margin: 24px 0 16px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #60a5fa;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .form-grid .col-span-2 { grid-column: span 2; }
+
+    .field-group { display: flex; flex-direction: column; gap: 6px; }
+    .field-label {
+      font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .field-hint { font-size: 0.72rem; color: var(--text-muted); font-weight: 400; }
+
+    .input-wrap { position: relative; display: flex; align-items: center; }
+
+    input, textarea, select {
+      width: 100%; background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+      color: var(--text-primary); padding: 10px 14px; font-size: 0.88rem;
+      font-family: inherit; outline: none; transition: all 0.15s;
+    }
+    input:hover, textarea:hover { border-color: var(--border-medium); }
+    input:focus, textarea:focus {
+      background: var(--bg-highlight); border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    textarea { resize: vertical; min-height: 75px; line-height: 1.5; }
+
+    .source-type-pill {
+      position: absolute; right: 10px; font-size: 0.7rem; font-family: var(--font-mono);
+      padding: 2px 8px; border-radius: 4px; background: var(--bg-highlight);
+      border: 1px solid var(--border-medium); color: var(--text-secondary);
+      pointer-events: none; display: none;
+    }
+
+    .dropzone {
+      border: 1px dashed var(--border-medium); border-radius: var(--radius-md);
+      padding: 16px; text-align: center; cursor: pointer;
+      background: rgba(255, 255, 255, 0.01); transition: all 0.2s;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .dropzone:hover, .dropzone.drag-active {
+      border-color: var(--accent); background: var(--accent-soft);
+    }
+    #pdf-input, #backup-input { display: none; }
+
+    details {
+      background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md); margin-top: 16px; overflow: hidden;
+    }
+    details summary {
+      padding: 12px 16px; font-size: 0.82rem; font-weight: 600;
+      color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 8px;
+    }
+    .details-body {
+      padding: 16px; border-top: 1px solid var(--border-subtle);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      font-family: inherit; font-size: 0.88rem; font-weight: 600;
+      border-radius: var(--radius-md); padding: 10px 18px; cursor: pointer;
+      border: none; transition: all 0.15s ease; text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--accent); color: #ffffff;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+    .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 4px 20px var(--accent-glow); }
+    .btn-secondary {
+      background: var(--bg-elevated); color: var(--text-primary);
+      border: 1px solid var(--border-medium);
+    }
+    .btn-secondary:hover { background: var(--bg-highlight); }
+    .btn-block { width: 100%; margin-top: 24px; }
+    .btn-sm { padding: 6px 12px; font-size: 0.78rem; border-radius: var(--radius-sm); }
+
+    .review-toolbar {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; gap: 10px; flex-wrap: wrap;
+    }
+    .search-input { max-width: 200px; padding: 7px 12px; font-size: 0.8rem; }
+
+    .days-scroll {
+      max-height: 560px; overflow-y: auto; padding-right: 6px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .day-card {
+      background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md); padding: 16px;
+    }
+    .day-card-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-subtle);
+    }
+    .day-badge {
+      font-weight: 700; font-size: 0.92rem; color: var(--text-primary);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .day-date-str { font-size: 0.78rem; font-family: var(--font-mono); color: var(--text-muted); }
+
+    .box-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    .box-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .box-entry label {
+      font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 4px; display: block;
+    }
+    .box-entry textarea { font-size: 0.84rem; line-height: 1.45; background: var(--bg-surface); }
+
+    /* Modal / Preview Drawer */
+    .preview-modal {
+      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+      z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .preview-modal.active { display: flex; }
+    .preview-box {
+      background: var(--bg-surface); border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg); width: 100%; max-width: 680px; max-height: 90vh;
+      display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    }
+    .preview-header {
+      padding: 14px 20px; border-bottom: 1px solid var(--border-subtle);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .preview-body {
+      padding: 16px; overflow-y: auto; text-align: center; background: #0b0c10;
+    }
+    .preview-body img {
+      max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .progress-wrap { text-align: center; padding: 40px 20px; }
+    .progress-track {
+      width: 100%; height: 8px; background: var(--bg-elevated);
+      border-radius: 999px; overflow: hidden; margin: 24px 0 12px;
+      border: 1px solid var(--border-subtle);
+    }
+    .progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #2563eb, #60a5fa);
+      transition: width 0.3s ease;
+    }
+    .status-text { font-size: 0.9rem; color: var(--text-secondary); font-weight: 500; }
+
+    .completion-panel { display: none; text-align: center; padding: 30px 10px; }
+    .success-badge-icon {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--success-soft); border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--success); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;
+    }
+
+    .alert-banner {
+      background: var(--error-soft); border: 1px solid rgba(244, 63, 94, 0.3);
+      color: #fda4af; padding: 12px 16px; border-radius: var(--radius-md);
+      font-size: 0.84rem; margin-bottom: 20px; display: none;
+    }
+
+    @media (max-width: 640px) {
+      .form-grid, .box-split, .details-body { grid-template-columns: 1fr; }
+      .form-grid .col-span-2 { grid-column: span 1; }
+      .surface { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
+          <path d="M6 6h10"></path>
+          <path d="M6 10h10"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">OJL Book Maker <span style="font-size:0.7rem; color:var(--text-muted); font-weight:400;">v2.5</span></div>
+        <div class="brand-subtitle">Automated College OJT Project Logbook</div>
+      </div>
+    </div>
+    <div class="header-pills">
+      <div class="pill">
+        <div class="pill-dot"></div>
+        Page 3 & Page 8+ Active
+      </div>
+      <div class="pill accent">
+        Skip Sundays • Pages 1,2,4–7 Untouched
+      </div>
+    </div>
+  </header>
+
+  <div class="app-container">
+    <div class="step-track">
+      <div class="step-segment active" id="track-1">
+        <div class="step-num">1</div>
+        <span>Setup & Details</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-segment" id="track-2">
+        <div class="step-num">2</div>
+        <span>Review & Preview</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-segment" id="track-3">
+        <div class="step-num">3</div>
+        <span>Export Document</span>
+      </div>
+    </div>
+
+    <div class="alert-banner" id="error-box"></div>
+
+    <!-- STEP 1: CONFIGURE & SYNTHESIZE -->
+    <div class="surface active" id="surface-1">
+      <div class="surface-header">
+        <h2 class="surface-title">Project Setup & Working Period</h2>
+        <p class="surface-desc">Fill learner details (stamped on Page 3) and connect your repository. Public repos work with just a link; private repos automatically read your PAT from <code>.env</code>.</p>
+      </div>
+
+      <form id="setup-form">
+        <!-- Template Selection Dropzone -->
+        <div class="field-group" style="margin-bottom: 16px;">
+          <div class="dropzone" id="dropzone">
+            <svg class="dropzone-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="12" y1="18" x2="12" y2="12"></line>
+              <line x1="9" y1="15" x2="15" y2="15"></line>
+            </svg>
+            <div style="font-weight:600; font-size:0.85rem;" id="dropzone-label">Select empty template PDF (Optional)</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Defaulting to <code>input/OJT Logbook.pdf</code> if left unselected</div>
+            <input type="file" id="pdf-input" accept=".pdf" />
+          </div>
+        </div>
+
+        <!-- 1. Repository Source -->
+        <div class="form-grid">
+          <div class="field-group col-span-2">
+            <label class="field-label" for="github_url">
+              Repository Source (Public or Private)
+              <span class="field-hint">GitHub URL or local clone path</span>
+            </label>
+            <div class="input-wrap">
+              <input type="text" id="github_url" value="/Users/ataulhai/Developer/tensr" placeholder="https://github.com/owner/repo OR /path/to/local/clone" required />
+              <div class="source-type-pill" id="source-badge">DETECTING</div>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="start_date">First Date (Day 1 / Start Date)</label>
+            <input type="date" id="start_date" value="2026-09-01" required />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="end_date">
+              Last Date
+              <span class="field-hint" id="day-calc-label">Sundays skipped</span>
+            </label>
+            <input type="date" id="end_date" value="2026-11-17" required />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="ojt_timing">OJL Timing (Headers)</label>
+            <input type="text" id="ojt_timing" value="9:30 AM to 7:30 PM" required />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="department">Department (Headers)</label>
+            <input type="text" id="department" value="Computer Science Engineering" required />
+          </div>
+
+          <div class="field-group col-span-2">
+            <label class="field-label" for="designation">Designation (Headers)</label>
+            <input type="text" id="designation" value="GenAI - AI Engineer Trainee" required />
+          </div>
+        </div>
+
+        <!-- 2. Learner Details (Page 3) -->
+        <div class="section-separator">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          Learner's Details (Stamped on Page 3)
+        </div>
+
+        <div class="form-grid">
+          <div class="field-group">
+            <label class="field-label" for="learner_name">Learner's Name</label>
+            <input type="text" id="learner_name" value="Ata Ul Hai" required />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="registration_no">Registration No.</label>
+            <input type="text" id="registration_no" value="251810700121" required />
+          </div>
+
+          <div class="field-group col-span-2">
+            <label class="field-label" for="program_name">Program Name</label>
+            <input type="text" id="program_name" value="Integrated B.Tech in Computer Science Engineering (AI and ML) [2025-2029]" required />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="semester">Semester</label>
+            <input type="text" id="semester" value="3rd Sem" required />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="location">Location</label>
+            <input type="text" id="location" value="Polaris School of Technology, Bangalore, Karnataka" required />
+          </div>
+
+          <div class="field-group col-span-2">
+            <label class="field-label" for="industry_partner_name">Industry Partner Name</label>
+            <input type="text" id="industry_partner_name" value="Futuretalks Services Private Limited" required />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="phone_no">Phone No. <span class="field-hint">Optional</span></label>
+            <input type="text" id="phone_no" placeholder="e.g. +91 9876543210" />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="email_id">email Id <span class="field-hint">Optional</span></label>
+            <input type="text" id="email_id" placeholder="e.g. learner@example.com" />
+          </div>
+        </div>
+
+        <!-- 3. Optional Settings & Author Filter -->
+        <details>
+          <summary>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            Optional: Multi-Contributor Author Filter & Keys
+          </summary>
+          <div class="details-body">
+            <div class="field-group">
+              <label class="field-label" for="author_filter">
+                Git Author / Committer Filter
+                <span class="field-hint">Filter commits by author</span>
+              </label>
+              <input type="text" id="author_filter" placeholder="e.g. ataulhai or your-email@example.com" />
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="github_token">GitHub PAT (Optional)</label>
+              <input type="password" id="github_token" placeholder="Automatically reads .env if blank" />
+            </div>
+            <div class="field-group col-span-2">
+              <label class="field-label" for="gemini_api_key">Gemini API Key (Optional)</label>
+              <input type="password" id="gemini_api_key" placeholder="Automatically reads .env if blank" />
+            </div>
+          </div>
+        </details>
+
+        <button type="submit" class="btn btn-primary btn-block" id="synthesize-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          Synthesize Daily Activities
+        </button>
+      </form>
+    </div>
+
+    <!-- STEP 2: REVIEW & LIVE PREVIEW -->
+    <div class="surface" id="surface-2">
+      <div class="surface-header">
+        <div class="surface-title">
+          <span>Review Synthesized Journal</span>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-secondary btn-sm" id="live-preview-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              Live Page Preview
+            </button>
+            <span class="pill accent" id="working-days-pill">0 Days</span>
+          </div>
+        </div>
+        <p class="surface-desc">All entries are grounded in your project commits with authentic engineering language. Edit cards below or inspect real-time vector alignment in the Live Preview.</p>
+      </div>
+
+      <div class="review-toolbar">
+        <input type="text" class="search-input" id="search-days" placeholder="Filter by day or keyword..." />
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-secondary btn-sm" id="export-json-btn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Export Backup (JSON)
+          </button>
+          <button class="btn btn-secondary btn-sm" id="import-json-btn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            Import Backup
+          </button>
+          <input type="file" id="backup-input" accept=".json" />
+        </div>
+      </div>
+
+      <div class="days-scroll" id="cards-container"></div>
+
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button type="button" class="btn btn-secondary" id="back-btn" style="flex: 1;">
+          ← Back
+        </button>
+        <button type="button" class="btn btn-primary" id="finalize-pdf-btn" style="flex: 2;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="12" y1="18" x2="12" y2="12"></line>
+            <line x1="9" y1="15" x2="15" y2="15"></line>
+          </svg>
+          Write & Save Final OJL Book
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 3: PROGRESS & DOWNLOAD -->
+    <div class="surface" id="surface-3">
+      <div class="progress-wrap" id="progress-view">
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 6px;">Writing Your OJL Book</h2>
+        <div class="status-text" id="status-label">Initializing PDF engine...</div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-bar"></div>
+        </div>
+        <p style="font-size: 0.78rem; color: var(--text-muted);">
+          Stamping Learner's Details on Page 3 • Day 1 on Page 8 • Pages 1,2,4–7 untouched
+        </p>
+      </div>
+
+      <div class="completion-panel" id="completion-view">
+        <div class="success-badge-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <h2 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 6px;">Document Ready & Saved</h2>
+        <p style="color: var(--text-secondary); font-size: 0.88rem; max-width: 520px; margin: 0 auto 24px;">
+          Your OJL Journal is ready. The document has also been persisted locally to <code>output/final_ojt_journal.pdf</code>.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center; align-items: center;">
+          <a class="btn btn-primary" id="download-btn" href="#">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Download Final OJL PDF
+          </a>
+          <button class="btn btn-secondary" id="restart-btn">
+            Create Another
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVE PDF PREVIEW MODAL -->
+  <div class="preview-modal" id="preview-modal">
+    <div class="preview-box">
+      <div class="preview-header">
+        <div style="font-weight:700; font-size:0.95rem; display:flex; align-items:center; gap:8px;">
+          <span>Live Vector Page Preview</span>
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-secondary btn-sm" id="preview-p3-btn">Page 3 (Learner Details)</button>
+            <button class="btn btn-secondary btn-sm" id="preview-p8-btn">Page 8 (Day 1)</button>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="close-preview-btn">✕ Close</button>
+      </div>
+      <div class="preview-body" id="preview-body">
+        <div style="padding:40px; color:var(--text-muted);">Generating real-time vector preview...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentTaskId = null;
+    let daysData = [];
+    let customPdfFile = null;
+    let learnerDetails = {};
+
+    const dropzone = document.getElementById('dropzone');
+    const pdfInput = document.getElementById('pdf-input');
+    const dropzoneLabel = document.getElementById('dropzone-label');
+    const githubUrlInput = document.getElementById('github_url');
+    const sourceBadge = document.getElementById('source-badge');
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+    const dayCalcLabel = document.getElementById('day-calc-label');
+    const setupForm = document.getElementById('setup-form');
+    const synthesizeBtn = document.getElementById('synthesize-btn');
+    const errorBox = document.getElementById('error-box');
+
+    // Live source badge
+    githubUrlInput.addEventListener('input', () => {
+      const val = githubUrlInput.value.trim();
+      if (!val) { sourceBadge.style.display = 'none'; return; }
+      sourceBadge.style.display = 'block';
+      if (val.startsWith('/') || val.startsWith('./') || val.startsWith('../') || val.includes(':\\')) {
+        sourceBadge.textContent = 'LOCAL CLONE';
+        sourceBadge.style.color = '#34d399';
+      } else if (val.includes('github.com')) {
+        sourceBadge.textContent = 'GITHUB REMOTE';
+        sourceBadge.style.color = '#60a5fa';
+      } else {
+        sourceBadge.textContent = 'SOURCE';
+        sourceBadge.style.color = '#a1a1aa';
+      }
+    });
+    githubUrlInput.dispatchEvent(new Event('input'));
+
+    function updateWorkingDaysLabel() {
+      if (startDateInput.value && endDateInput.value) {
+        const start = new Date(startDateInput.value);
+        const end = new Date(endDateInput.value);
+        if (end >= start) {
+          let count = 0;
+          let cur = new Date(start);
+          while (cur <= end) {
+            if (cur.getDay() !== 0) count++;
+            cur.setDate(cur.getDate() + 1);
+          }
+          dayCalcLabel.textContent = `${count} working days (Sundays skipped)`;
+          dayCalcLabel.style.color = '#60a5fa';
+          return;
+        }
+      }
+      dayCalcLabel.textContent = 'Sundays skipped';
+      dayCalcLabel.style.color = 'var(--text-muted)';
+    }
+    startDateInput.addEventListener('change', updateWorkingDaysLabel);
+    endDateInput.addEventListener('change', updateWorkingDaysLabel);
+    updateWorkingDaysLabel();
+
+    // Dropzone
+    dropzone.addEventListener('click', () => pdfInput.click());
+    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('drag-active'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-active'));
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault(); dropzone.classList.remove('drag-active');
+      if (e.dataTransfer.files.length) {
+        customPdfFile = e.dataTransfer.files[0];
+        dropzoneLabel.innerHTML = `✓ ${customPdfFile.name} <span style="font-size:0.75rem; color:#10b981;">(${(customPdfFile.size/1024/1024).toFixed(1)} MB)</span>`;
+      }
+    });
+    pdfInput.addEventListener('change', () => {
+      if (pdfInput.files.length) {
+        customPdfFile = pdfInput.files[0];
+        dropzoneLabel.innerHTML = `✓ ${customPdfFile.name} <span style="font-size:0.75rem; color:#10b981;">(${(customPdfFile.size/1024/1024).toFixed(1)} MB)</span>`;
+      }
+    });
+
+    function showError(msg) {
+      errorBox.textContent = msg;
+      errorBox.style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function hideError() { errorBox.style.display = 'none'; }
+
+    function switchSurface(num) {
+      [1, 2, 3].forEach(n => {
+        document.getElementById(`surface-${n}`).classList.remove('active');
+        const track = document.getElementById(`track-${n}`);
+        track.classList.remove('active');
+        if (n < num) track.classList.add('done');
+        else track.classList.remove('done');
+      });
+      document.getElementById(`surface-${num}`).classList.add('active');
+      document.getElementById(`track-${num}`).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Step 1: Submit Form
+    setupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError();
+
+      synthesizeBtn.disabled = true;
+      synthesizeBtn.innerHTML = `Synthesizing Daily Activities...`;
+
+      const formData = new FormData();
+      formData.append('github_url', githubUrlInput.value.trim());
+      formData.append('start_date', startDateInput.value);
+      formData.append('end_date', endDateInput.value);
+      formData.append('ojt_timing', document.getElementById('ojt_timing').value.trim());
+      formData.append('department', document.getElementById('department').value.trim());
+      formData.append('designation', document.getElementById('designation').value.trim());
+      
+      // Page 3 Learner Details
+      formData.append('learner_name', document.getElementById('learner_name').value.trim());
+      formData.append('registration_no', document.getElementById('registration_no').value.trim());
+      formData.append('program_name', document.getElementById('program_name').value.trim());
+      formData.append('semester', document.getElementById('semester').value.trim());
+      formData.append('location', document.getElementById('location').value.trim());
+      formData.append('industry_partner_name', document.getElementById('industry_partner_name').value.trim());
+      formData.append('phone_no', document.getElementById('phone_no').value.trim());
+      formData.append('email_id', document.getElementById('email_id').value.trim());
+
+      // Optional Filters
+      formData.append('author_filter', document.getElementById('author_filter').value.trim());
+      formData.append('gemini_api_key', document.getElementById('gemini_api_key').value.trim());
+      formData.append('github_token', document.getElementById('github_token').value.trim());
+
+      if (customPdfFile) {
+        formData.append('pdf_file', customPdfFile);
+      }
+
+      try {
+        const resp = await fetch('/generate-from-github', { method: 'POST', body: formData });
+        const res = await resp.json();
+
+        if (!resp.ok) {
+          throw new Error(res.error || 'Failed to process project repository');
+        }
+
+        currentTaskId = res.task_id;
+        daysData = res.daily_work || [];
+        learnerDetails = res.learner_details || {};
+        document.getElementById('working-days-pill').textContent = `${res.total_days} Working Days`;
+
+        renderCards(daysData);
+        switchSurface(2);
+      } catch (err) {
+        showError(err.message);
+      } finally {
+        synthesizeBtn.disabled = false;
+        synthesizeBtn.innerHTML = `Synthesize Daily Activities`;
+      }
+    });
+
+    // Step 2: Render Cards
+    function renderCards(days) {
+      const container = document.getElementById('cards-container');
+      container.innerHTML = '';
+
+      days.forEach((day, index) => {
+        const card = document.createElement('div');
+        card.className = 'day-card';
+        card.dataset.dayNum = day.day;
+        card.innerHTML = `
+          <div class="day-card-head">
+            <div class="day-badge">
+              <span>Day ${day.day}</span>
+              <span class="day-date-str">${day.date}</span>
+            </div>
+            <span style="font-size:0.72rem; color:var(--text-muted); font-family:var(--font-mono);">Page ${day.day + 7}</span>
+          </div>
+          <div class="box-grid">
+            <div class="box-entry">
+              <label>MY SPACE (Engineering Reflections & Design Considerations)</label>
+              <textarea data-day="${index}" data-field="my_space">${day.my_space || ''}</textarea>
+            </div>
+            <div class="box-entry">
+              <label>Tasks Carried Out Today</label>
+              <textarea data-day="${index}" data-field="tasks_carried_out">${day.tasks_carried_out || ''}</textarea>
+            </div>
+            <div class="box-entry">
+              <label>Key Learnings / Observations</label>
+              <textarea data-day="${index}" data-field="key_learnings">${day.key_learnings || ''}</textarea>
+            </div>
+            <div class="box-split">
+              <div class="box-entry">
+                <label>Tools / Libraries Used</label>
+                <textarea data-day="${index}" data-field="tools_used">${day.tools_used || ''}</textarea>
+              </div>
+              <div class="box-entry">
+                <label>Special Achievements</label>
+                <textarea data-day="${index}" data-field="special_achievements">${day.special_achievements || ''}</textarea>
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      container.querySelectorAll('textarea').forEach(tx => {
+        tx.addEventListener('input', (e) => {
+          const idx = parseInt(e.target.dataset.day);
+          const f = e.target.dataset.field;
+          daysData[idx][f] = e.target.value;
+        });
+      });
+    }
+
+    // Filter cards
+    document.getElementById('search-days').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      document.querySelectorAll('.day-card').forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(q) ? 'block' : 'none';
+      });
+    });
+
+    document.getElementById('back-btn').addEventListener('click', () => switchSurface(1));
+
+    // Live In-Browser Preview Modal
+    const previewModal = document.getElementById('preview-modal');
+    const previewBody = document.getElementById('preview-body');
+
+    async function loadPagePreview(pageNum) {
+      previewBody.innerHTML = `<div style="padding:40px; color:var(--text-muted);">Generating real-time Page ${pageNum} preview...</div>`;
+      try {
+        const r = await fetch(`/preview/${currentTaskId}/${pageNum}`);
+        if (!r.ok) throw new Error('Preview failed');
+        const blob = await r.blob();
+        const imgUrl = URL.createObjectURL(blob);
+        previewBody.innerHTML = `<img src="${imgUrl}" alt="Page ${pageNum} Preview" />`;
+      } catch (err) {
+        previewBody.innerHTML = `<div style="padding:40px; color:var(--error);">Failed to load preview: ${err.message}</div>`;
+      }
+    }
+
+    document.getElementById('live-preview-btn').addEventListener('click', () => {
+      previewModal.classList.add('active');
+      loadPagePreview(3); // Start with Page 3 (Learner Details)
+    });
+    document.getElementById('preview-p3-btn').addEventListener('click', () => loadPagePreview(3));
+    document.getElementById('preview-p8-btn').addEventListener('click', () => loadPagePreview(8));
+    document.getElementById('close-preview-btn').addEventListener('click', () => previewModal.classList.remove('active'));
+    previewModal.addEventListener('click', (e) => {
+      if (e.target === previewModal) previewModal.classList.remove('active');
+    });
+
+    // Export & Import Backup
+    document.getElementById('export-json-btn').addEventListener('click', () => {
+      if (currentTaskId) {
+        window.location.href = `/export-backup/${currentTaskId}`;
+      }
+    });
+
+    const backupInput = document.getElementById('backup-input');
+    document.getElementById('import-json-btn').addEventListener('click', () => backupInput.click());
+    backupInput.addEventListener('change', async () => {
+      if (!backupInput.files.length) return;
+      const file = backupInput.files[0];
+      const fd = new FormData();
+      fd.append('backup_file', file);
+      try {
+        const r = await fetch('/import-backup', { method: 'POST', body: fd });
+        const res = await r.json();
+        if (!r.ok) throw new Error(res.error || 'Import failed');
+        currentTaskId = res.task_id;
+        daysData = res.daily_work || [];
+        learnerDetails = res.learner_details || {};
+        document.getElementById('working-days-pill').textContent = `${res.total_days} Working Days`;
+        renderCards(daysData);
+        switchSurface(2);
+      } catch (err) {
+        showError(err.message);
+      }
+    });
+
+    // Step 2 -> Step 3: Trigger Final PDF Generation
+    document.getElementById('finalize-pdf-btn').addEventListener('click', async () => {
+      hideError();
+      switchSurface(3);
+
+      document.getElementById('progress-view').style.display = 'block';
+      document.getElementById('completion-view').style.display = 'none';
+
+      try {
+        const resp = await fetch('/generate-pdf', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            task_id: currentTaskId,
+            daily_work: daysData,
+            learner_details: learnerDetails
+          })
+        });
+
+        if (!resp.ok) {
+          const err = await resp.json();
+          throw new Error(err.error || 'Failed to start PDF overlay');
+        }
+
+        pollGenerationProgress(currentTaskId);
+      } catch (err) {
+        showError(err.message);
+        switchSurface(2);
+      }
+    });
+
+    function pollGenerationProgress(taskId) {
+      const bar = document.getElementById('progress-bar');
+      const label = document.getElementById('status-label');
+
+      const interval = setInterval(async () => {
+        try {
+          const r = await fetch(`/status/${taskId}`);
+          const data = await r.json();
+
+          bar.style.width = (data.progress || 0) + '%';
+          label.textContent = data.message || 'Processing pages...';
+
+          if (data.status === 'done') {
+            clearInterval(interval);
+            document.getElementById('progress-view').style.display = 'none';
+            document.getElementById('completion-view').style.display = 'block';
+            document.getElementById('download-btn').href = `/download/${taskId}`;
+          } else if (data.status === 'error') {
+            clearInterval(interval);
+            showError('Generation error: ' + data.message);
+            switchSurface(2);
+          }
+        } catch (e) {}
+      }, 1000);
+    }
+
+    document.getElementById('restart-btn').addEventListener('click', () => switchSurface(1));
+  </script>
+</body>
+</html>
